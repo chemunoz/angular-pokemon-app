@@ -1,0 +1,29 @@
+.card {
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.card.active {
+  border: 2px solid #007bff;
+}
+
+.badge {
+  padding: 5px 10px;
+  font-size: 12px;
+  color: white;
+}
+
+.progress {
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  background-color: #007bff;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
