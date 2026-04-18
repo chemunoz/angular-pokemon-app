@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { Pokemon } from '../../models/pokemon.model';
 import { PokemonService } from '../../services/pokemon.service';
+import { PokemonStorageService } from '../../services/pokemon-storage.service';
 
 @Component({
   selector: 'app-pokemon-list',
   templateUrl: './pokemon-list.component.html',
   styleUrls: ['./pokemon-list.component.css']
 })
-export class PokemonListComponent implements OnInit {
+export class PokemonListComponent implements OnInit, OnDestroy {
   pokemonList: Pokemon[] = [];
   allPokemon: Pokemon[] = [];
   currentPokemon: Pokemon | null = null;
@@ -20,18 +21,35 @@ export class PokemonListComponent implements OnInit {
   loading = false;
 
   private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
-  constructor(private pokemonService: PokemonService) {}
+  constructor(
+    private pokemonService: PokemonService,
+    private pokemonStorage: PokemonStorageService
+  ) {}
 
   ngOnInit(): void {
     this.loadPokemon();
 
+    this.pokemonStorage.customPokemon$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(customPokemon => {
+      this.pokemonList = [...this.pokemonList.filter(p => p.isCustom), ...customPokemon];
+      this.allPokemon = [...this.allPokemon.filter(p => p.isCustom), ...customPokemon];
+    });
+
     this.searchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
     ).subscribe(searchTerm => {
       this.filterPokemon(searchTerm);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onSearchChange(): void {
@@ -72,6 +90,10 @@ export class PokemonListComponent implements OnInit {
           });
         });
         
+        const customPokemon = this.pokemonStorage.getCustomPokemon();
+        this.pokemonList = [...this.pokemonList, ...customPokemon];
+        this.allPokemon = [...this.allPokemon, ...customPokemon];
+        
         this.loading = false;
       },
       error: (e) => {
@@ -106,6 +128,19 @@ export class PokemonListComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  deletePokemon(pokemon: Pokemon, event: Event): void {
+    event.stopPropagation();
+    if (pokemon.isCustom) {
+      this.pokemonStorage.deletePokemon(pokemon.id);
+      this.pokemonList = this.pokemonList.filter(p => p.id !== pokemon.id);
+      this.allPokemon = this.allPokemon.filter(p => p.id !== pokemon.id);
+      if (this.currentPokemon?.id === pokemon.id) {
+        this.currentPokemon = null;
+        this.currentIndex = -1;
+      }
+    }
   }
 
   nextPage(): void {

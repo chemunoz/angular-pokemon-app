@@ -1,0 +1,31 @@
+.type-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.type-option input {
+  display: none;
+}
+
+.type-label {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  font-size: 14px;
+  text-transform: capitalize;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.type-label:hover {
+  transform: scale(1.05);
+}
+
+.type-option input:checked + .type-label {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px currentColor;
+}
+
+.card {
+  margin-top: 20px;
+}

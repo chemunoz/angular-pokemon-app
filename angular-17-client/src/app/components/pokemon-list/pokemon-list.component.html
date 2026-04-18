@@ -9,13 +9,17 @@
     <div class="row">
       <div class="col-md-4 mb-3" *ngFor="let pokemon of pokemonList; let i = index">
         <div class="card h-100" [class.active]="i === currentIndex" (click)="setActivePokemon(pokemon, i)" style="cursor: pointer;">
+          <button *ngIf="pokemon.isCustom" class="btn btn-danger btn-sm delete-btn" (click)="deletePokemon(pokemon, $event)">X</button>
           <div class="text-center p-3">
             <img [src]="pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default" 
                  [alt]="pokemon.name" 
                  style="height: 120px; width: auto;">
           </div>
           <div class="card-body text-center">
-            <h5 class="card-title text-capitalize">{{ pokemon.name }}</h5>
+            <h5 class="card-title text-capitalize">
+              {{ pokemon.name }}
+              <span *ngIf="pokemon.isCustom" class="badge badge-primary ml-1" style="font-size: 10px;">Custom</span>
+            </h5>
             <div class="mb-2">
               <span *ngFor="let type of pokemon.types" 
                     class="badge mr-1" 
@@ -38,7 +42,10 @@
   <div class="col-md-4">
     <div *ngIf="currentPokemon" class="card">
       <div class="card-header">
-        <h5 class="text-capitalize mb-0">{{ currentPokemon.name }}</h5>
+        <h5 class="text-capitalize mb-0">
+          {{ currentPokemon.name }}
+          <span *ngIf="currentPokemon.isCustom" class="badge badge-primary ml-1" style="font-size: 10px;">Custom</span>
+        </h5>
       </div>
       <div class="card-body text-center">
         <img [src]="currentPokemon.sprites.other['official-artwork'].front_default || currentPokemon.sprites.front_default" 
@@ -54,26 +61,32 @@
         </div>
 
         <div class="mt-3 text-left">
-          <p><strong>Height:</strong> {{ currentPokemon.height / 10 }} m</p>
-          <p><strong>Weight:</strong> {{ currentPokemon.weight / 10 }} kg</p>
+          <p *ngIf="currentPokemon.height"><strong>Height:</strong> {{ currentPokemon.height / 10 }} m</p>
+          <p *ngIf="currentPokemon.weight"><strong>Weight:</strong> {{ currentPokemon.weight / 10 }} kg</p>
           
-          <h6>Stats:</h6>
-          <div *ngFor="let stat of currentPokemon.stats">
-            <div class="d-flex justify-content-between">
-              <span class="text-capitalize">{{ stat.stat.name }}:</span>
-              <strong>{{ stat.base_stat }}</strong>
-            </div>
-            <div class="progress mb-2" style="height: 8px;">
-              <div class="progress-bar" [style.width.%]="(stat.base_stat / 255) * 100"></div>
+          <div *ngIf="currentPokemon.stats && currentPokemon.stats.length > 0">
+            <h6>Stats:</h6>
+            <div *ngFor="let stat of currentPokemon.stats">
+              <div class="d-flex justify-content-between">
+                <span class="text-capitalize">{{ stat.stat.name }}:</span>
+                <strong>{{ stat.base_stat }}</strong>
+              </div>
+              <div class="progress mb-2" style="height: 8px;">
+                <div class="progress-bar" [style.width.%]="(stat.base_stat / 255) * 100"></div>
+              </div>
             </div>
           </div>
 
-          <h6 class="mt-3">Abilities:</h6>
-          <span *ngFor="let ability of currentPokemon.abilities" class="badge badge-light mr-1 text-capitalize">
-            {{ ability.ability.name }}
-            <span *ngIf="ability.is_hidden">(hidden)</span>
-          </span>
+          <div *ngIf="currentPokemon.abilities && currentPokemon.abilities.length > 0">
+            <h6 class="mt-3">Abilities:</h6>
+            <span *ngFor="let ability of currentPokemon.abilities" class="badge badge-light mr-1 text-capitalize">
+              {{ ability.ability.name }}
+              <span *ngIf="ability.is_hidden">(hidden)</span>
+            </span>
+          </div>
         </div>
+        
+        <button *ngIf="currentPokemon.isCustom" class="btn btn-danger mt-3" (click)="deletePokemon(currentPokemon, $event)">Delete Pokemon</button>
       </div>
     </div>
   </div>

@@ -17,6 +17,13 @@ export interface Pokemon {
   stats: Stat[];
   height: number;
   weight: number;
+  isCustom?: boolean;
+}
+
+export interface CustomPokemon {
+  name: string;
+  types: string[];
+  imageUrl: string;
 }
 
 export interface PokemonType {
